@@ -1,29 +1,25 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Get,
-  // @UseFilters() 装饰器需要从 @nestjs/common 包导入
-  UseFilters,
-} from '@nestjs/common';
-import { CreateCatDto } from './dto/create-cat.dto';
-import { ForbiddenException } from './filters/forbidden.exception';
-import { HttpExceptionFilter } from './filters/http-exception.filter';
+import { Controller, Get } from '@nestjs/common';
+import { CatsService } from './cats.service';
+
+const sleep = (time) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve(0);
+    }, time);
+  });
+};
 
 @Controller('cats')
-// @UseFilters(HttpExceptionFilter)
 export class CatsController {
+  constructor(private catsService: CatsService) {}
   @Get()
-  find() {
-    return 'all of it !';
+  async findAll(): Promise<any> {
+    return await this.catsService.findAll();
   }
-  // ...
-  @Post()
-  async create(@Body() createCatDto: CreateCatDto) {
-    throw new ForbiddenException();
-  }
-  @Get()
-  async findAll() {
-    throw new Error('error>>>');
+
+  @Get('all')
+  async getAll(): Promise<any> {
+    // await sleep(1500);
+    return 'All Cats';
   }
 }

@@ -11,9 +11,23 @@ import { CatsController } from './cats/cats.controller';
 import { logger } from './common/middleware/logger.middleware';
 import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from './cats/filters/any-exception.filter';
+import { ConfigModule } from '@nestjs/config';
+import { MyModule } from './my-service/my-service.module';
+import { UserModule } from './user/user.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
-  imports: [CatsModule],
+  imports: [
+    CatsModule,
+    ConfigModule.forRoot(),
+    MyModule,
+    UserModule,
+    CacheModule.register({
+      isGlobal: true,
+    }),
+    ScheduleModule.forRoot(),
+  ],
   controllers: [AppController],
   providers: [
     {
