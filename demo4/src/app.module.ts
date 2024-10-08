@@ -16,6 +16,9 @@ import { MyModule } from './my-service/my-service.module';
 import { UserModule } from './user/user.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ScheduleModule } from '@nestjs/schedule';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
+import { CaslModule } from './casl/casl.module';
 
 @Module({
   imports: [
@@ -27,6 +30,9 @@ import { ScheduleModule } from '@nestjs/schedule';
       isGlobal: true,
     }),
     ScheduleModule.forRoot(),
+    AuthModule,
+    UsersModule,
+    CaslModule,
   ],
   controllers: [AppController],
   providers: [

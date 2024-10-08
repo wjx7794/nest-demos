@@ -1,16 +1,15 @@
-import { Injectable, HttpException } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { map, catchError } from 'rxjs';
+import { Injectable } from '@nestjs/common';
+import { CaslAbilityFactory } from '../casl/casl-ability.factory/casl-ability.factory';
+
 @Injectable()
 export class CatsService {
-  constructor(private readonly httpService: HttpService) {}
+  constructor(private caslAbilityFactory: CaslAbilityFactory) {}
 
   async findAll(): Promise<any> {
-    return this.httpService.get('http://localhost:3000/cats/all').pipe(
-      map((res) => res.data),
-      catchError((e) => {
-        throw new HttpException(`请求错误`, 400);
-      }),
-    );
+    const ability = this.caslAbilityFactory.createForUser();
+    console.log(ability.can('read', 'Post'));
+    console.log(ability.can('delete', 'User'));
+    console.log(ability.cannot('delete', 'User'));
+    return 'all';
   }
 }
