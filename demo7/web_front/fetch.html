@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+  <body>
+    <button onclick="startStream()">开始流式请求</button>
+    <button onclick="stopStream()">停止流式请求</button>
+    <div id="output"></div>
+
+    <script>
+      let abortController = null;
+      let reader = null;
+      const url = 'http://localhost:3000/push';
+
+      // 1. 开始流式请求
+      async function startStream() {
+        abortController = new AbortController();
+        const output = document.getElementById('output');
+        output.innerHTML = ''; // 清空旧数据
+
+        try {
+          const response = await fetch(url, {
+            signal: abortController.signal, // 绑定中止信号
+          });
+
+          if (!response.ok) throw new Error('请求失败');
+
+          // 获取可读流
+          reader = response.body.getReader();
+          const decoder = new TextDecoder();
+
+          while (true) {
+            // 检查是否已中止
+            if (abortController.signal.aborted) {
+              console.log('请求已被手动中止');
+              break;
+            }
+
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            // 处理数据块
+            const text = decoder.decode(value);
+            output.innerHTML += text + '<br>';
+          }
+        } catch (err) {
+          if (err.name === 'AbortError') {
+            console.log('流式请求已中止');
+          } else {
+            console.error('请求异常:', err);
+          }
+        } finally {
+          // 清理资源
+          if (reader) {
+            await reader.cancel(); // 停止流读取
+            reader = null;
+          }
+          abortController = null;
+        }
+      }
+
+      // 2. 中止流式请求
+      function stopStream() {
+        if (abortController && !abortController.signal.aborted) {
+          abortController.abort(); // 触发 AbortError
+        }
+      }
+    </script>
+  </body>
+</html>

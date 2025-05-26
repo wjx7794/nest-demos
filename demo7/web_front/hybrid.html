@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+  <body>
+    <button onclick="startSession()">创建会话</button>
+    <div id="output"></div>
+    <!-- 测试按钮 -->
+    <button onclick="triggerMessage()">触发消息</button>
+
+    <script>
+      const baseUrl = 'http://localhost:3000';
+      let sessionId = null;
+      let eventSource = null;
+
+      // 步骤1: 创建会话并获取 SSE 连接 URL
+      async function startSession() {
+        const response = await fetch(`${baseUrl}/sse/start`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: '1000' }),
+        });
+        const data = await response.json();
+
+        sessionId = data.sessionId;
+        connectSSE(`${baseUrl}${data.url}`);
+      }
+
+      // 步骤2: 连接 SSE 流
+      function connectSSE(url) {
+        if (eventSource) eventSource.close();
+
+        eventSource = new EventSource(url);
+
+        eventSource.onmessage = (e) => {
+          const data = JSON.parse(e.data);
+          document.getElementById('output').innerHTML += `${data.content}<br>`;
+        };
+
+        eventSource.onerror = (err) => {
+          console.error('SSE 错误:', err);
+        };
+      }
+
+      // 步骤3: 模拟业务触发服务端推送
+      async function triggerMessage() {
+        await fetch(`${baseUrl}/sse/send`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: sessionId,
+            message: 'Easy on me',
+          }),
+        });
+      }
+    </script>
+  </body>
+</html>
